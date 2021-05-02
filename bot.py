@@ -93,3 +93,12 @@ bot.run(TOKEN)
 # warning_channel string  - channel ID (not name) to send warning messages within 
 # role_required_for_cmd   - plaintext of lowest role required to run commands
 
+
+#################################
+### TODO
+#################################
+
+#TODO implement settings per guild on yaml
+#TODO set up git
+#TODO git push data repo if local is ahead (local will be source of most up-to-date)
+#TODO load bad accts' yaml files into one large variable that can be searched
