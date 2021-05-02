@@ -4,6 +4,7 @@
 # https://discordpy.readthedocs.io/en/rewrite/index.html
 # https://realpython.com/how-to-make-a-discord-bot-python/
 
+# import all th stuff needed later
 import os
 import yaml
 import discord
@@ -18,6 +19,7 @@ from discord_slash.utils.manage_commands import create_option
 
 from  dotenv import load_dotenv
 
+#loads from a file called .env. I didn't push it because it contains a secret passcode token for the bot.
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
@@ -25,7 +27,6 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 #################################
 # get yamls
 #################################
-
 
 # read reports YAML into var
 def get_reports():
@@ -57,12 +58,15 @@ new_guild_defaults = get_guild_defaults()
 # set up client
 #################################
 
+# creates a bot user, and sets it up with discord's slash commands intents
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
 
+# as soon as bot is operational
 @bot.event
 async def on_ready():
 
+  #iterate through guilds it's connected to
   print('Connecting to:')
   for guild in bot.guilds:
     print(' - ', guild.id, guild.name)
@@ -71,20 +75,26 @@ async def on_ready():
     if not guild.id in saved_guilds:
       print('new guild! adding to config, hold tight.')
 
+      #grab defaults, append it, safe to file
       saved_guilds[guild.id] = new_guild_defaults
       save_guilds(saved_guilds)
 
     for member in guild.members:
+      # ignore members that are just other bots
       if member.bot: 
         return
       
+      # ignore members with no reports
       if not reports[member.id]:
         return
       
+      # get report count, and warn console (for now)
+      #TODO attach this to warn through warn method
       report_count = reports[member.id]['report_count']
       s = "s" if report_count > 1 else ""
       print(f"found {report_count} report{s} for {member.name}#{member.discriminator}")
 
+# when a new member joins
 @bot.event
 async def on_member_join(member):
   #check if UUID matches any from the YAML
@@ -107,6 +117,7 @@ async def on_member_join(member):
 @slash.slash(
   name="check", 
   description="Check if a user is in the reports database",
+  # options are for auto-fill stuff within discord
   options=[
     create_option(
       name="username",
@@ -116,6 +127,8 @@ async def on_member_join(member):
     )
   ])
 async def _check(ctx, username):
+  # right now this  just spits out an embed with the tagged user. not the correct functionality
+  #TODO check if tagged user has reports
   embed = discord.Embed(title="embed test")
   await ctx.send(content=username, embeds=[embed])
 
