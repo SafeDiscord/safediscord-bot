@@ -1,0 +1,40 @@
+1:
+  general:
+    send_in_channel: false
+    warning_channel_id: 1
+  thresholds:
+    destructive:
+      dest_account_age: -1
+      dest_if_all_match: false
+      dest_match_keywords: []
+      dest_report_count: -1
+    malicious:
+      mali_account_age: -1
+      mali_if_all_match: false
+      mali_match_keywords: []
+      mali_report_count: -1
+    problematic:
+      warn_account_age: -1
+      warn_if_all_match: false
+      warn_match_keywords: []
+      warn_report_count: -1
+346367103235784704:
+  general:
+    send_in_channel: false
+    warning_channel_id: 1
+  thresholds:
+    destructive:
+      dest_account_age: -1
+      dest_if_all_match: false
+      dest_match_keywords: []
+      dest_report_count: -1
+    malicious:
+      mali_account_age: -1
+      mali_if_all_match: false
+      mali_match_keywords: []
+      mali_report_count: -1
+    problematic:
+      warn_account_age: -1
+      warn_if_all_match: false
+      warn_match_keywords: []
+      warn_report_count: -1

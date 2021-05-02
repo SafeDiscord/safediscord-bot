@@ -1,0 +1,23 @@
+general:
+    send_in_channel: False
+    warning_channel_id: 1 
+    # role_required_for_cmds: "" #int?
+
+thresholds:
+    problematic:
+        warn_account_age: -1
+        warn_report_count: -1
+        warn_match_keywords: []
+        warn_if_all_match: False
+
+    malicious:
+        mali_account_age: -1
+        mali_report_count: -1
+        mali_match_keywords: []
+        mali_if_all_match: False
+
+    destructive:
+        dest_account_age: -1
+        dest_report_count: -1
+        dest_match_keywords: []
+        dest_if_all_match: False

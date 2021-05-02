@@ -11,6 +11,7 @@ from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
+
 #################################
 # get tokens
 #################################
@@ -22,17 +23,34 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 
 #################################
-# get list of malicious accs
+# get yamls
 #################################
 
-# import git
 
-# SD_repo = git.Repo('https://github.com/SafeDiscord/safediscord-repo.git')
-# SD_repo.remotes.origin.pull()
-# read YAML into var
+# read reports YAML into var
+def get_reports():
+  with open('../safediscord-repo/reports.yaml') as reports_file:
+    return yaml.load(reports_file, yaml.SafeLoader)
 
-with open('../safediscord-repo/reports.yaml') as reports_file:
-  reports = yaml.load(reports_file)
+reports = get_reports()
+
+# read guilds YAML into var
+def get_guilds():
+  with open('./guilds.yaml') as guilds_file:
+    return yaml.load(guilds_file, yaml.SafeLoader)
+
+saved_guilds = get_guilds()
+
+def save_guilds(guilds):
+  with open(r'./guilds.yaml', 'w') as guilds_file:
+    return yaml.dump(guilds, guilds_file)
+
+# read default guild settings YAML into var
+def get_guild_defaults():
+  with open('./new_guild_defaults.yaml') as new_guild_file:
+    return yaml.load(new_guild_file, yaml.SafeLoader)
+
+new_guild_defaults = get_guild_defaults()
 
 
 #################################
@@ -48,7 +66,24 @@ async def on_ready():
   print('Connecting to:')
   for guild in bot.guilds:
     print(' - ', guild.id, guild.name)
-    # get config file for the guild, use source or something, load file up as variables
+
+    # check if guild is a new one
+    if not guild.id in saved_guilds:
+      print('new guild! adding to config, hold tight.')
+
+      saved_guilds[guild.id] = new_guild_defaults
+      save_guilds(saved_guilds)
+
+    for member in guild.members:
+      if member.bot: 
+        return
+      
+      if not reports[member.id]:
+        return
+      
+      report_count = reports[member.id]['report_count']
+      s = "s" if report_count > 1 else ""
+      print(f"found {report_count} report{s} for {member.name}#{member.discriminator}")
 
 @bot.event
 async def on_member_join(member):
@@ -95,7 +130,7 @@ bot.run(TOKEN)
 
 ### general channel and role settings
   # send_in_channel           - bool      - send warning messages in a specific channel
-  # warning_channel string    - channel   - channel to send warning messages within 
+  # warning_channel_id        - int       - channel to send warning messages within 
   # role_required_for_cmd     - role      - lowest role required to run commands
 
 #### threshold groups: problematic, malicious, destructive (settings are repeated per level)
