@@ -46,10 +46,10 @@ async def on_ready():
     print(' - ', guild.id, guild.name)
     # get config file for the guild, use source or something, load file up as variables
 
-# @bot.event
-# async def on_member_join(member):
+@bot.event
+async def on_member_join(member):
   #check if UUID matches any from the YAML
-
+  pass    
 
 
 #################################
@@ -66,19 +66,19 @@ async def on_ready():
 #################################
 
 @slash.slash(
-    name="check", 
-    description="Check if a user is in the reports database",
-    options=[
-        create_option(
-            name="username",
-            description="Username to check",
-            option_type=3,
-            required=True
-        )
-    ])
+  name="check", 
+  description="Check if a user is in the reports database",
+  options=[
+    create_option(
+      name="username",
+      description="Username to check",
+      option_type=3,
+      required=True
+    )
+  ])
 async def _check(ctx, username):
-    embed = discord.Embed(title="embed test")
-    await ctx.send(content=username, embeds=[embed])
+  embed = discord.Embed(title="embed test")
+  await ctx.send(content=username, embeds=[embed])
 
 
 bot.run(TOKEN)
@@ -90,28 +90,28 @@ bot.run(TOKEN)
 #################################
 
 ### general channel and role settings
-    # send_in_channel           - bool      - send warning messages in a specific channel
-    # warning_channel string    - channel   - channel to send warning messages within 
-    # role_required_for_cmd     - role      - lowest role required to run commands
+  # send_in_channel           - bool      - send warning messages in a specific channel
+  # warning_channel string    - channel   - channel to send warning messages within 
+  # role_required_for_cmd     - role      - lowest role required to run commands
 
 #### threshold groups: problematic, malicious, destructive (settings are repeated per level)
-    # problematic 
-        # warn_account_age      - int       - if account is newer than X days, run warn(). -1 to disable
-        # warn_report_count     - int       - if account has X or more reports, run warn(). -1 to disable
-        # warn_match_keywords   - list:str  - if any reports contain any of these words, run warn(). empty list to disable
-        # warn_if_all_match     - bool      - only run warn() if all criteria match. if False, run if any criteria match
+  # problematic 
+    # warn_account_age      - int       - if account is newer than X days, run warn(). -1 to disable
+    # warn_report_count     - int       - if account has X or more reports, run warn(). -1 to disable
+    # warn_match_keywords   - list:str  - if any reports contain any of these words, run warn(). empty list to disable
+    # warn_if_all_match     - bool      - only run warn() if all criteria match. if False, run if any criteria match
 
-    # malicious
-        # mali_account_age      - int       - if account is newer than X days, run mali(). -1 to disable
-        # mali_report_count     - int       - if account has X or more reports, run mali(). -1 to disable
-        # mali_match_keywords   - list:str  - if any reports contain any of these words, run mali(). empty list to disable  
-        # mali_if_all_match     - bool      - only run mali() if all criteria match. if False, run if any criteria match
+  # malicious
+    # mali_account_age      - int       - if account is newer than X days, run mali(). -1 to disable
+    # mali_report_count     - int       - if account has X or more reports, run mali(). -1 to disable
+    # mali_match_keywords   - list:str  - if any reports contain any of these words, run mali(). empty list to disable  
+    # mali_if_all_match     - bool      - only run mali() if all criteria match. if False, run if any criteria match
 
-    # destructive
-        # dest_account_age      - int       - if account is newer than X days, run dest(). -1 to disable
-        # dest_report_count     - int       - if account has X or more reports, run dest(). -1 to disable
-        # dest_match_keywords   - list:str  - if any reports contain any of these words, run dest(). empty list to disable  
-        # dest_if_all_match     - bool      - only run dest() if all criteria match. if False, run if any criteria match
+  # destructive
+    # dest_account_age      - int       - if account is newer than X days, run dest(). -1 to disable
+    # dest_report_count     - int       - if account has X or more reports, run dest(). -1 to disable
+    # dest_match_keywords   - list:str  - if any reports contain any of these words, run dest(). empty list to disable  
+    # dest_if_all_match     - bool      - only run dest() if all criteria match. if False, run if any criteria match
 
 
 # reaction_report           - bool      - react to a user join message with:
