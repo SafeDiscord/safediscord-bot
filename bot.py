@@ -5,6 +5,7 @@
 # https://realpython.com/how-to-make-a-discord-bot-python/
 
 import os
+import yaml
 import discord
 from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
@@ -29,6 +30,9 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 # SD_repo = git.Repo('https://github.com/SafeDiscord/safediscord-repo.git')
 # SD_repo.remotes.origin.pull()
 # read YAML into var
+
+with open('../safediscord-repo/reports.yaml') as reports_file:
+  reports = yaml.load(reports_file)
 
 
 #################################
@@ -128,5 +132,6 @@ bot.run(TOKEN)
 #TODO implement settings per guild on yaml
 #TODO set up git
 #TODO git push data repo if local is ahead (local will be source of most up-to-date)
-#TODO load bad accts' yaml files into one large variable that can be searched
 #TODO setup walkthrough of settings on first run in server. hidden bot messages in main channel to owner only?
+
+#DONE load bad accts' yaml files into one large variable that can be searched
