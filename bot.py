@@ -12,7 +12,6 @@ from discord.ext import commands
 from discord_slash import SlashCommand, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
-
 #################################
 # get tokens
 #################################
@@ -22,7 +21,6 @@ from  dotenv import load_dotenv
 #loads from a file called .env. I didn't push it because it contains a secret passcode token for the bot.
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
-
 
 #################################
 # get yamls
@@ -59,6 +57,7 @@ new_guild_defaults = get_guild_defaults()
 #################################
 
 # creates a bot user, and sets it up with discord's slash commands intents
+#TODO: narrow down list of intents https://discord.com/developers/docs/topics/gateway#list-of-intents
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 slash = SlashCommand(bot, sync_commands=True)
 
@@ -81,24 +80,22 @@ async def on_ready():
 
     for member in guild.members:
       # ignore members that are just other bots
-      if member.bot: 
-        return
+      results = check_member(member)
       
-      # ignore members with no reports
-      if not reports[member.id]:
-        return
-      
-      # get report count, and warn console (for now)
-      #TODO attach this to warn through warn method
-      report_count = reports[member.id]['report_count']
-      s = "s" if report_count > 1 else ""
-      print(f"found {report_count} report{s} for {member.name}#{member.discriminator}")
+      if results:
+        print(results)
 
 # when a new member joins
 @bot.event
-async def on_member_join(member):
+async def on_member_join(self, member):
   #check if UUID matches any from the YAML
-  pass    
+  results = check_member(member):
+
+  if results:
+    owner_dm = member.guild.owner.create_dm()
+
+    await owner_dm.send(results)
+    
 
 
 #################################
@@ -108,6 +105,20 @@ async def on_member_join(member):
 # does user have perms
 
 # is UUID bad
+def check_member(member):
+      if member.bot: 
+        return False
+      
+      # ignore members with no reports
+      if not reports[member.id]:
+        return False
+      
+      # get report count, and warn console (for now)
+      #TODO attach this to warn through warn method
+      report_count = reports[member.id]['report_count']
+      s = "s" if report_count > 1 else ""
+
+      return f"found {report_count} report{s} for {member.name}#{member.discriminator}"
 
 
 #################################
