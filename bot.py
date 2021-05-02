@@ -89,9 +89,21 @@ bot.run(TOKEN)
 ### settings for later date
 #################################
 
-# send_in_channel bool    - send warning messages in a specific channel
-# warning_channel string  - channel ID (not name) to send warning messages within 
-# role_required_for_cmd   - plaintext of lowest role required to run commands
+# send_in_channel           - bool      - send warning messages in a specific channel
+# warning_channel string    - string    - channel ID (not name) to send warning messages within 
+# role_required_for_cmd     - role      - lowest role required to run commands
+# warn_on_new_account       - bool      - if account is newer than x days, warn
+
+#### rethink into threshold groups: warn, problematic, malicious
+# warn_on_report_count      - int       - if there are x+ reports, warn. -1 to turn off
+# mute_on_report_count      - int       - if there are x+ reports, mute immediately on join. -1 to turn off
+####
+
+# reaction_report           - bool      - react to a user join message with:
+#                                           💚 good account
+#                                           👀 meets warn criteria
+#                                           🔶 meets problematic criteria
+#                                           🟥 meets malicious criteria
 
 
 #################################
