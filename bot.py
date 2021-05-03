@@ -83,18 +83,35 @@ async def on_ready():
       results = check_member(member)
       
       if results:
-        print(results)
+        print(f'Results found for {member.name}')
 
 # when a new member joins
 @bot.event
-async def on_member_join(self, member):
+async def on_member_join(member):
   #check if UUID matches any from the YAML
-  results = check_member(member):
+  results = check_member(member)
 
   if results:
-    owner_dm = member.guild.owner.create_dm()
+    owner_dm = await member.guild.owner.create_dm()
 
-    await owner_dm.send(results)
+    #TODO extract into embed creator function
+    embed = discord.Embed(
+      title=f"Report for {member.guild.name}",
+      color=discord.Color(0x3e038c), #TODO set color based on threshold
+      description=f'{member.name}#{member.discriminator}'
+    )
+    embed.set_thumbnail(url=member.avatar_url)
+
+    #  + "\n\u200b" adds a single newline below the current line, for spacing. https://github.com/Rapptz/discord.py/issues/643 
+    embed.add_field(name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
+    
+    for report in results['reports'][:3]:
+      embed.add_field(name=f'Date:', value=report['date'], inline=True)
+      embed.add_field(name=f'Server:', value=report['server_name'], inline=True)
+      embed.add_field(name=f'Message:', value=report['report_msg'] + "\n\u200b", inline=False)
+
+    embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
+    await owner_dm.send(embed=embed)
     
 
 
@@ -118,7 +135,10 @@ def check_member(member):
       report_count = reports[member.id]['report_count']
       s = "s" if report_count > 1 else ""
 
-      return f"found {report_count} report{s} for {member.name}#{member.discriminator}"
+      threshold = "warn" #TODO set up proper threshold detection
+
+      return {"report_count":report_count, "member":member, "threshold":threshold, "reports":reports[member.id]['reports']}
+      # return f"{report_count} report{s} for {member.name}#{member.discriminator}"
 
 
 #################################
