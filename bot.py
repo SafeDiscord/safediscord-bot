@@ -145,7 +145,12 @@ async def check_member(_id):
 
   threshold = "warn" #TODO set up proper threshold detection
 
-  return {"report_count":report_count, "_id":_id, "threshold":threshold, "reports":reports[_id]['reports']}
+  return {
+    "report_count":report_count, 
+    "_id":_id, 
+    "threshold":threshold, 
+    "reports":reports[_id]['reports']
+  }
 
 
 #################################
@@ -220,7 +225,15 @@ async def _show(ctx, user: discord.User):
   ])
 async def _report(ctx, user:discord.User, report):
 
-  await ctx.send(content="Report added! :white_check_mark:", hidden=True)
+  # this should be mentally taxing because it is a permanent record
+  # don't want it to be too easy and then have people submitting joke reports 
+  # requiring confirmation is a good idea.
+  # is it a good idea to ask 2 others to confirm?
+  # let the owner or account set up to be in charge set up a role for confirmation
+  # and then ping the role and go for 2 confirmations, store those inside the same report
+  # each confirmation is its own command. 
+
+  await ctx.send(content="Report added! :white_check_mark: (dry run cmd)", hidden=True)
 
 
 bot.run(TOKEN)
