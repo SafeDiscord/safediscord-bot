@@ -188,10 +188,11 @@ async def _check(ctx, user: discord.User):
     )
   ])
 async def _show(ctx, user: discord.User):
+  
+  if isinstance(user, int):
+    user = await bot.fetch_user(user)
 
-  userm = await commands.UserConverter().convert(ctx, user)
-  print(f'\n\n{userm}\n\n')
-  results = await check_member(userm)
+  results = await check_member(user.id)
 
   if results:
     embed = await create_embed(results)
