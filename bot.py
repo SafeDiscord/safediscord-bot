@@ -99,30 +99,41 @@ async def on_member_join(member):
 
 
 #################################
-# util funcs, start with _
+# util functions
 #################################
 
+#create embeds
 async def create_embed(results):
+
+  #grab user from discord's API even if left server
   user = await bot.fetch_user(results['_id'])
+
+  #create new embed
   embed = discord.Embed(
     title=f"Report for {user}",
     color=discord.Color(0x3e038c), #TODO set color based on threshold
-    # description=f'{results["member"].name}#{results["member"].discriminator}'
   )
+
   embed.set_thumbnail(url=user.avatar_url)
 
-  #  + "\n\u200b" adds a single newline below the current line, for spacing. https://github.com/Rapptz/discord.py/issues/643 
-  embed.add_field(name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
+  # + "\n\u200b" adds a single newline below the current line, for spacing. 
+  # https://github.com/Rapptz/discord.py/issues/643 
+  embed.add_field(
+    name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
   
+  #iterate through the reports, only insert the first 3
   for report in results['reports'][:3]:
     embed.add_field(name=f'Date:', value=report['date'], inline=True)
     embed.add_field(name=f'Server:', value=report['server_name'], inline=True)
     embed.add_field(name=f'Message:', value=report['report_msg'] + "\n\u200b", inline=False)
 
+  #if there were no reports, 
   if results["report_count"] == 0:
     embed.add_field(name='** **', value=f'Clean slate!')
+  
+  #otherwise if there were more than 3 reports
   elif results["report_count"] > 3:
-    embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
+    embed.add_field(name='** **', value=f'... plus {results["report_count"] - 3} more')
 
   return embed
   
@@ -130,20 +141,19 @@ async def create_embed(results):
 # is member bad
 async def check_member(_id):
 
+  #grab user from discord's API even if left server
   user = await bot.fetch_user(_id)
+
   if user.bot:
     return False
 
-  # ignore members with no reports
+  # send positive report if no reports
   if not _id in reports:
     return {"report_count":0, "_id":_id,"reports":[],"threshold":0}
   
-  # get report count, and warn console (for now)
-  #TODO attach this to warn through warn method
+  # get report count, and threshold
   report_count = reports[_id]['report_count']
-  s = "s" if report_count > 1 else ""
-
-  threshold = "warn" #TODO set up proper threshold detection
+  threshold = "warn" 
 
   return {
     "report_count":report_count, 
@@ -159,9 +169,8 @@ async def check_member(_id):
 
 @slash.slash(
   name="check", 
-  description="Check if a user is in the reports database",
-  # options are for auto-fill stuff within discord
-  options=[ #TODO add more options here for a client ID instead
+  description="Check if a user is in the reports database", 
+  options=[ 
     create_option(
       name="user",
       description="Tag user to check",
@@ -171,20 +180,23 @@ async def check_member(_id):
   ])
 async def _check(ctx, user: discord.User):
 
+  # if user is int instead of discord User, 
+  # grab the user based on int (id) from discord API
   if isinstance(user, int):
     user = await bot.fetch_user(user)
   
+  # grab report
   results = await check_member(user.id)
-
   if results:
     embed = await create_embed(results)
     await ctx.send(embed=embed, hidden=True)
   
+# same thing as above, except no `hidden=True`,
+# so all server users can see the message, not just the cmd user
 @slash.slash(
-  name="show", 
+  name="show", #TODO replace show with an optional visible flag for check
   description="Same as /check, shows results in chat for everyone",
-  # options are for auto-fill stuff within discord
-  options=[ #TODO add more options here for a client ID instead
+  options=[
     create_option(
       name="user",
       description="Tag user to check",
@@ -192,13 +204,11 @@ async def _check(ctx, user: discord.User):
       required=True
     )
   ])
-async def _show(ctx, user: discord.User):
-  
+async def _show(ctx, user: discord.User): #same as above
   if isinstance(user, int):
     user = await bot.fetch_user(user)
 
   results = await check_member(user.id)
-
   if results:
     embed = await create_embed(results)
     await ctx.send(embed=embed)
@@ -208,8 +218,8 @@ async def _show(ctx, user: discord.User):
 @slash.slash(
   name="report", 
   description="Report user to Safe Discord database",
-  # options are for auto-fill stuff within discord
-  options=[ #TODO add more options here for a client ID instead
+  options=[ 
+    # the two options create two params that are both required, in this order
     create_option(
       name="user",
       description="Tag user to report",
