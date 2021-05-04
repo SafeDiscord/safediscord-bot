@@ -139,7 +139,6 @@ def check_member(member):
       threshold = "warn" #TODO set up proper threshold detection
 
       return {"report_count":report_count, "member":member, "threshold":threshold, "reports":reports[member.id]['reports']}
-      # return f"{report_count} report{s} for {member.name}#{member.discriminator}"
 
 
 #################################
@@ -153,23 +152,65 @@ def check_member(member):
   options=[ #TODO add more options here for a client ID instead
     create_option(
       name="user",
-      description="Username to check",
-      option_type=3,
+      description="Tag user to check",
+      option_type=6,
       required=True
     )
   ])
-async def _check(ctx, user):
+async def _check(ctx, user: discord.User):
 
-  member = await commands.MemberConverter().convert(ctx, user)
-  
-  results = check_member(member)
+  results = check_member(user)
+
+  if results:
+    embed = create_embed(results)
+    await ctx.send(embed=embed, hidden=True)
+  else:
+    await ctx.send(content='No reports found for user', hidden=True) #TODO maybe move the "clean slate" to the report itself?
+
+@slash.slash(
+  name="show", 
+  description="Same as /check, shows results in chat for everyone",
+  # options are for auto-fill stuff within discord
+  options=[ #TODO add more options here for a client ID instead
+    create_option(
+      name="user",
+      description="Tag user to check",
+      option_type=6,
+      required=True
+    )
+  ])
+async def _check(ctx, user: discord.User):
+  results = check_member(user)
 
   if results:
     embed = create_embed(results)
     await ctx.send(embed=embed)
   else:
-    await ctx.send(content='No reports found for user')
+    await ctx.send(content='No reports found for user') #TODO maybe move the "clean slate" to the report itself?
 
+
+
+@slash.slash(
+  name="report", 
+  description="Report user to Safe Discord database",
+  # options are for auto-fill stuff within discord
+  options=[ #TODO add more options here for a client ID instead
+    create_option(
+      name="user",
+      description="Tag user to report",
+      option_type=6,
+      required=True
+    ),
+    create_option(
+      name="report",
+      description="Description of report",
+      option_type=3,
+      required=True
+    )
+  ])
+async def _report(ctx, user:discord.User, report):
+
+  await ctx.send(content="Report added! :white_check_mark:", hidden=True)
 
 
 bot.run(TOKEN)
