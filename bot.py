@@ -80,7 +80,7 @@ async def on_ready():
 
     for member in guild.members:
       # ignore members that are just other bots
-      results = check_member(member)
+      results = await check_member(member.id)
       
       if results:
         print(f'Results found for {member.name}')
@@ -89,11 +89,11 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
   #check if UUID matches any from the YAML
-  results = check_member(member)
+  results = await check_member(member.id)
 
   if results:
     owner_dm = await member.guild.owner.create_dm()
-    embed = create_embed(results)
+    embed = await create_embed(results)
     await owner_dm.send(embed=embed)
     
 
@@ -102,13 +102,14 @@ async def on_member_join(member):
 # util funcs, start with _
 #################################
 
-def create_embed(results):
+async def create_embed(results):
+  user = await bot.fetch_user(results['_id'])
   embed = discord.Embed(
-    title=f"Report for {results['member'].guild.name}",
+    title=f"Report for {user}",
     color=discord.Color(0x3e038c), #TODO set color based on threshold
-    description=f'{results["member"].name}#{results["member"].discriminator}'
+    # description=f'{results["member"].name}#{results["member"].discriminator}'
   )
-  embed.set_thumbnail(url=results['member'].avatar_url)
+  embed.set_thumbnail(url=user.avatar_url)
 
   #  + "\n\u200b" adds a single newline below the current line, for spacing. https://github.com/Rapptz/discord.py/issues/643 
   embed.add_field(name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
@@ -118,27 +119,33 @@ def create_embed(results):
     embed.add_field(name=f'Server:', value=report['server_name'], inline=True)
     embed.add_field(name=f'Message:', value=report['report_msg'] + "\n\u200b", inline=False)
 
-  embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
+  if results["report_count"] == 0:
+    embed.add_field(name='** **', value=f'Clean slate!')
+  elif results["report_count"] > 3:
+    embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
 
   return embed
+  
 
 # is member bad
-def check_member(member):
-      if member.bot: 
-        return False
+async def check_member(_id):
 
-      # ignore members with no reports
-      if not reports[member.id]:
-        return False
-      
-      # get report count, and warn console (for now)
-      #TODO attach this to warn through warn method
-      report_count = reports[member.id]['report_count']
-      s = "s" if report_count > 1 else ""
+  user = await bot.fetch_user(_id)
+  if user.bot:
+    return False
 
-      threshold = "warn" #TODO set up proper threshold detection
+  # ignore members with no reports
+  if not _id in reports:
+    return {"report_count":0, "_id":_id,"reports":[],"threshold":0}
+  
+  # get report count, and warn console (for now)
+  #TODO attach this to warn through warn method
+  report_count = reports[_id]['report_count']
+  s = "s" if report_count > 1 else ""
 
-      return {"report_count":report_count, "member":member, "threshold":threshold, "reports":reports[member.id]['reports']}
+  threshold = "warn" #TODO set up proper threshold detection
+
+  return {"report_count":report_count, "_id":_id, "threshold":threshold, "reports":reports[_id]['reports']}
 
 
 #################################
@@ -159,14 +166,15 @@ def check_member(member):
   ])
 async def _check(ctx, user: discord.User):
 
-  results = check_member(user)
+  if isinstance(user, int):
+    user = await bot.fetch_user(user)
+  
+  results = await check_member(user.id)
 
   if results:
-    embed = create_embed(results)
+    embed = await create_embed(results)
     await ctx.send(embed=embed, hidden=True)
-  else:
-    await ctx.send(content='No reports found for user', hidden=True) #TODO maybe move the "clean slate" to the report itself?
-
+  
 @slash.slash(
   name="show", 
   description="Same as /check, shows results in chat for everyone",
@@ -179,15 +187,16 @@ async def _check(ctx, user: discord.User):
       required=True
     )
   ])
-async def _check(ctx, user: discord.User):
-  results = check_member(user)
+async def _show(ctx, user: discord.User):
+
+  userm = await commands.UserConverter().convert(ctx, user)
+  print(f'\n\n{userm}\n\n')
+  results = await check_member(userm)
 
   if results:
-    embed = create_embed(results)
+    embed = await create_embed(results)
     await ctx.send(embed=embed)
-  else:
-    await ctx.send(content='No reports found for user') #TODO maybe move the "clean slate" to the report itself?
-
+ 
 
 
 @slash.slash(
