@@ -93,24 +93,7 @@ async def on_member_join(member):
 
   if results:
     owner_dm = await member.guild.owner.create_dm()
-
-    #TODO extract into embed creator function
-    embed = discord.Embed(
-      title=f"Report for {member.guild.name}",
-      color=discord.Color(0x3e038c), #TODO set color based on threshold
-      description=f'{member.name}#{member.discriminator}'
-    )
-    embed.set_thumbnail(url=member.avatar_url)
-
-    #  + "\n\u200b" adds a single newline below the current line, for spacing. https://github.com/Rapptz/discord.py/issues/643 
-    embed.add_field(name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
-    
-    for report in results['reports'][:3]:
-      embed.add_field(name=f'Date:', value=report['date'], inline=True)
-      embed.add_field(name=f'Server:', value=report['server_name'], inline=True)
-      embed.add_field(name=f'Message:', value=report['report_msg'] + "\n\u200b", inline=False)
-
-    embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
+    embed = create_embed(results)
     await owner_dm.send(embed=embed)
     
 
@@ -119,13 +102,31 @@ async def on_member_join(member):
 # util funcs, start with _
 #################################
 
-# does user have perms
+def create_embed(results):
+  embed = discord.Embed(
+    title=f"Report for {results['member'].guild.name}",
+    color=discord.Color(0x3e038c), #TODO set color based on threshold
+    description=f'{results["member"].name}#{results["member"].discriminator}'
+  )
+  embed.set_thumbnail(url=results['member'].avatar_url)
 
-# is UUID bad
+  #  + "\n\u200b" adds a single newline below the current line, for spacing. https://github.com/Rapptz/discord.py/issues/643 
+  embed.add_field(name=f'Report Count:', value=f'{results["report_count"]}' + "\n\u200b", inline=False)
+  
+  for report in results['reports'][:3]:
+    embed.add_field(name=f'Date:', value=report['date'], inline=True)
+    embed.add_field(name=f'Server:', value=report['server_name'], inline=True)
+    embed.add_field(name=f'Message:', value=report['report_msg'] + "\n\u200b", inline=False)
+
+  embed.add_field(name='** **', value=f'...plus {results["report_count"] - 3} more')
+
+  return embed
+
+# is member bad
 def check_member(member):
       if member.bot: 
         return False
-      
+
       # ignore members with no reports
       if not reports[member.id]:
         return False
@@ -149,19 +150,26 @@ def check_member(member):
   name="check", 
   description="Check if a user is in the reports database",
   # options are for auto-fill stuff within discord
-  options=[
+  options=[ #TODO add more options here for a client ID instead
     create_option(
-      name="username",
+      name="user",
       description="Username to check",
       option_type=3,
       required=True
     )
   ])
-async def _check(ctx, username):
-  # right now this  just spits out an embed with the tagged user. not the correct functionality
-  #TODO check if tagged user has reports
-  embed = discord.Embed(title="embed test")
-  await ctx.send(content=username, embeds=[embed])
+async def _check(ctx, user):
+
+  member = await commands.MemberConverter().convert(ctx, user)
+  
+  results = check_member(member)
+
+  if results:
+    embed = create_embed(results)
+    await ctx.send(embed=embed)
+  else:
+    await ctx.send(content='No reports found for user')
+
 
 
 bot.run(TOKEN)
