@@ -269,12 +269,12 @@ async def _report(ctx, user:discord.User, report):
       # ctx.send confirmation sent! thank you for your honesty and help keeping discord safer
 
 
+# command usage
+  # /report submit @user message description
+  # /report confirm report ID (autofill?) message description
 
-# /report submit @user message description
-# /report confirm report ID (autofill?) message description
-
-# /check @user
-# /check @user visible
+  # /check @user
+  # /check @user visible
 
 
   await ctx.send(content="Report added! :white_check_mark: (dry run cmd)", hidden=True)
@@ -329,10 +329,10 @@ bot.run(TOKEN)
 
 
 # reaction_report           - bool      - react to a user join message with:
-#                                           💚 good account
-#                                           👀 meets problematic criteria
-#                                           🔶 meets malicious criteria
-#                                           🟥 meets destructive criteria
+#                                           :green_heart:           good account
+#                                           :eyes:                  meets problematic criteria
+#                                           :large_orange_diamond:  meets malicious criteria
+#                                           :red_square:            meets destructive criteria
 
 
 #################################
