@@ -194,7 +194,7 @@ async def _check(ctx, user: discord.User):
 # same thing as above, except no `hidden=True`,
 # so all server users can see the message, not just the cmd user
 @slash.slash(
-  name="show", #TODO replace show with an optional visible flag for check
+  name="show", #TODO replace show with an optional visible flag within check
   description="Same as /check, shows results in chat for everyone",
   options=[
     create_option(
@@ -270,6 +270,13 @@ async def _report(ctx, user:discord.User, report):
 
 
 
+# /report submit @user message description
+# /report confirm report ID (autofill?) message description
+
+# /check @user
+# /check @user visible
+
+
   await ctx.send(content="Report added! :white_check_mark: (dry run cmd)", hidden=True)
 
 
@@ -282,10 +289,25 @@ bot.run(TOKEN)
 #################################
 
 ### general channel and role settings
-  # send_in_channel           - bool      - send warning messages in a specific channel
-  # warning_channel_id        - int       - channel to send warning messages within 
-  # role_required_for_cmd     - role      - lowest role required to run commands
-  # confirm_rank              - role      - role that will get PMs about report confirmation
+  # warn_in_server            - bool      - send warning messages in a server? otherwise PM owner
+  # warn_in_server_channel    - int       - channel to send warning messages within 
+
+  # check_rank                - role      - lowest role required to run check cmd
+  # report_rank               - role      - lowest role required to send reports
+  # confirm_rank              - role      - lowest role required to confirm reports
+  
+  # require_confirm           - bool      - require confirmation for reports? otherwise send immediately
+  # confirm_in_server         - bool      - allow confirmation cmd within server? otherwise send PMs to settings.confirm_rank
+  # confirm_in_server_channel - int       - channel to allow confirmation cmd. If `-1` cmd allowed anywhere
+
+  # check_in_server           - bool      - allow check to be ran within server? otherwise only in PMs to bot
+
+  # report_on_join            - bool      - run reports on people joining?
+  # report_on_join_channel    - int       - channel to send automatic reports on user join
+  # pm_report_on_join         - bool      - PM settings.pm_report_on_join_rank with report on join? 
+  # pm_report_on_join_rank    - int       - role that gets PMd with reports on user join
+
+  
 #### threshold groups: problematic, malicious, destructive (settings are repeated per level)
   # problematic 
     # warn_account_age      - int       - if account is newer than X days, run warn(). -1 to disable
