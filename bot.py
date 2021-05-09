@@ -242,6 +242,33 @@ async def _report(ctx, user:discord.User, report):
   # let the owner or account set up to be in charge set up a role for confirmation
   # and then ping the role and go for 2 confirmations, store those inside the same report
   # each confirmation is its own command. 
+  
+  # on report:
+     # check if user has settings.submit_rank role within guild for report
+        # if no role:
+          # ctx.send you do not have enough permissions to submit a report 
+     
+      # bot stores report contents, timestamp, submitted ID, guild ID
+      # PM settings.confirm_rank with stored report info, ask to confirm within settings.report_confim_time
+
+  
+  # on report cofirmation:
+      # check if user has settings.confirm_rank role within guild for report
+        # if no role:
+          # ctx.send you do not have enough permissions to confirm a report 
+      
+      # check first argument for report keywords (pineapple-football-eight, PAKE-like?)
+        # if does not exist:
+          # ctx.send report with that ID does not exist
+      
+      # check report timestamp vs current timestamp
+        # if difference is more than settings.report_confirm_time:
+          # ctx.send report is out of date. Please submit new report
+      
+      # add to report that one confirmation has gone through
+      # ctx.send confirmation sent! thank you for your honesty and help keeping discord safer
+
+
 
   await ctx.send(content="Report added! :white_check_mark: (dry run cmd)", hidden=True)
 
@@ -258,7 +285,7 @@ bot.run(TOKEN)
   # send_in_channel           - bool      - send warning messages in a specific channel
   # warning_channel_id        - int       - channel to send warning messages within 
   # role_required_for_cmd     - role      - lowest role required to run commands
-
+  # confirm_rank              - role      - role that will get PMs about report confirmation
 #### threshold groups: problematic, malicious, destructive (settings are repeated per level)
   # problematic 
     # warn_account_age      - int       - if account is newer than X days, run warn(). -1 to disable
@@ -296,3 +323,4 @@ bot.run(TOKEN)
 #TODO setup walkthrough of settings on first run in server. hidden bot messages in main channel to owner only?
 
 #DONE load bad accts' yaml files into one large variable that can be searched
+
