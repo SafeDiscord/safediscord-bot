@@ -6,6 +6,7 @@
 
 # import all th stuff needed later
 import os
+import time
 import yaml
 import discord
 from discord.ext import commands
@@ -152,14 +153,14 @@ async def check_member(_id):
     return {"report_count":0, "_id":_id,"reports":[],"threshold":0}
   
   # get report count, and threshold
-  report_count = reports[_id]['report_count']
+  report_count = len(reports[_id]['reports'])
   threshold = "warn" 
 
   return {
-    "report_count":report_count, 
-    "_id":_id, 
-    "threshold":threshold, 
-    "reports":reports[_id]['reports']
+    "report_count": report_count,
+    "_id"         : _id,
+    "threshold"   : threshold,
+    "reports"     : reports[_id]['reports']
   }
 
 
@@ -168,17 +169,21 @@ async def check_member(_id):
 #################################
 
 @slash.slash(
-  name="check", 
-  description="Check if a user is in the reports database", 
+  name        = "check",
+  description = "Check if a user is in the reports database",
   options=[ 
     create_option(
-      name="user",
-      description="Tag user to check",
-      option_type=6,
-      required=True
+      name        = "user",
+      description = "Tag user to report, or use ID",
+      option_type = 6,
+      required    = True
     )
   ])
 async def _check(ctx, user: discord.User):
+  # for now, let only the server owner and admins check reports
+  if not ctx.author.guild_permissions.administrator:
+    await ctx.send(content="You do not have permission to run this command!", hidden=True)
+    return
 
   # if user is int instead of discord User, 
   # grab the user based on int (id) from discord API
@@ -194,17 +199,26 @@ async def _check(ctx, user: discord.User):
 # same thing as above, except no `hidden=True`,
 # so all server users can see the message, not just the cmd user
 @slash.slash(
-  name="show", #TODO replace show with an optional visible flag within check
+  name="show", 
+  #TODO replace show with an optional visible flag within check
+  # /check @user
+  # /check @user visible
+  
   description="Same as /check, shows results in chat for everyone",
   options=[
     create_option(
-      name="user",
-      description="Tag user to check",
-      option_type=6,
-      required=True
+      name        = "user",
+      description = "Tag user to report, or use ID",
+      option_type = 6,
+      required    = True
     )
   ])
 async def _show(ctx, user: discord.User): #same as above
+  # for now, let only the server owner and admins check reports
+  if not ctx.author.guild_permissions.administrator:
+    await ctx.send(content="You do not have permission to run this command!", hidden=True)
+    return
+
   if isinstance(user, int):
     user = await bot.fetch_user(user)
 
@@ -216,21 +230,21 @@ async def _show(ctx, user: discord.User): #same as above
 
 
 @slash.slash(
-  name="report", 
-  description="Report user to Safe Discord database",
+  name        = "report",
+  description = "Report user to Safe Discord database",
   options=[ 
     # the two options create two params that are both required, in this order
     create_option(
-      name="user",
-      description="Tag user to report",
-      option_type=6,
-      required=True
+      name        = "user",
+      description = "Tag user to report, or use ID",
+      option_type = 6,
+      required    = True
     ),
     create_option(
-      name="report",
-      description="Description of report",
-      option_type=3,
-      required=True
+      name        = "report",
+      description = "Description of incident",
+      option_type = 3,
+      required    = True
     )
   ])
 async def _report(ctx, user:discord.User, report):
@@ -252,7 +266,7 @@ async def _report(ctx, user:discord.User, report):
       # PM settings.confirm_rank with stored report info, ask to confirm within settings.report_confim_time
 
   
-  # on report cofirmation:
+  # on report comfirmation:
       # check if user has settings.confirm_rank role within guild for report
         # if no role:
           # ctx.send you do not have enough permissions to confirm a report 
@@ -269,15 +283,45 @@ async def _report(ctx, user:discord.User, report):
       # ctx.send confirmation sent! thank you for your honesty and help keeping discord safer
 
 
-# command usage
-  # /report submit @user message description
-  # /report confirm report ID (autofill?) message description
+  # command usage
+    # /report submit @user message description
+    # /report confirm report ID (autofill?) message description
 
-  # /check @user
-  # /check @user visible
+  # for now, let only the server owner and admins send report without confirmation
+  if not ctx.author.guild_permissions.administrator:
+    await ctx.send(content="You do not have permission to run this command!", hidden=True)
+    return
+
+  #check if user is in server or not
+  if isinstance(user, int):
+    user = await bot.fetch_user(user) # if not, grab it through discord API
+
+  date        = time.strftime("%d-%m-%Y")
+  server_name = ctx.guild.name
+  server_id   = ctx.guild.id
+  report_msg  = report
+
+  new_report = {
+    "date"       : date,
+    "server_name": server_name,
+    "server_id"  : server_id,
+    "report_msg" : report_msg
+  }
+
+  #append report to user reports. This should work even if there is no user
+  if user.id not in reports:
+    reports[user.id] = {'reports':[]}
+
+  reports[user.id]['reports'].append(new_report)
 
 
-  await ctx.send(content="Report added! :white_check_mark: (dry run cmd)", hidden=True)
+  #write to file
+  with open('../safediscord-repo/reports.yaml', 'w') as reports_file:
+    data = yaml.dump(reports, reports_file)
+    await ctx.send(content="Report added! :white_check_mark:", hidden=True)
+    return 
+
+  await ctx.send(content="Reporting may have failed! :warning:", hidden=True)
 
 
 bot.run(TOKEN)
@@ -339,6 +383,7 @@ bot.run(TOKEN)
 ### TODO
 #################################
 
+#TODO implement report confirmation
 #TODO implement settings per guild on yaml
 #TODO set up git
 #TODO git push data repo if local is ahead (local will be source of most up-to-date)
